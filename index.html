@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>ホームページ 週次レポート</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: "Yu Gothic UI","Yu Gothic","Hiragino Sans","Meiryo",sans-serif; color: #222; background: #f3f3f3; }
+  #gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  #gate form { background: #fff; border-top: 4px solid #E3312A; border-radius: 8px; padding: 28px 24px; width: 100%; max-width: 380px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  #gate h1 { font-size: 18px; margin: 0 0 6px; }
+  #gate p { font-size: 13px; color: #666; margin: 0 0 16px; line-height: 1.6; }
+  #gate input[type=password] { width: 100%; font-size: 16px; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; }
+  #gate label.keep { display: flex; gap: 6px; align-items: center; font-size: 13px; color: #555; margin: 12px 0 0; }
+  #gate button { width: 100%; margin-top: 16px; font-size: 16px; padding: 11px; border: 0; border-radius: 6px; background: #E3312A; color: #fff; font-weight: 700; cursor: pointer; }
+  #gate button[disabled] { opacity: .6; cursor: default; }
+  #err { color: #c42820; font-size: 13px; margin-top: 10px; min-height: 1.4em; }
+  #gate .by { font-size: 12px; color: #999; margin: 14px 0 0; text-align: right; }
+  #app { display: none; }
+  #bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 16px; background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 2; font-size: 14px; }
+  #bar select, #bar button { font-size: 14px; padding: 6px 10px; border: 1px solid #bbb; border-radius: 6px; background: #fff; color: #222; }
+  #bar .sp { flex: 1; }
+  #sheet { padding: 16px 8px 32px; }
+  @media print {
+    body { background: #fff; }
+    #bar { display: none; }
+    #sheet { padding: 0; }
+  }
+</style>
+</head>
+<body>
+<div id="gate">
+  <form id="f" autocomplete="on">
+    <h1>ホームページ 週次レポート</h1>
+    <p>お知らせしたパスワードを入力してください。</p>
+    <input type="text" name="username" value="report" autocomplete="username" hidden>
+    <input id="pw" type="password" name="password" autocomplete="current-password" aria-label="パスワード" required>
+    <label class="keep"><input id="keep" type="checkbox" checked> この端末では次回から入力を省く</label>
+    <button id="go" type="submit">レポートを見る</button>
+    <div id="err" role="alert"></div>
+    <p class="by">three.T合同会社</p>
+  </form>
+</div>
+<div id="app">
+  <div id="bar">
+    <label for="week">表示する週</label>
+    <select id="week"></select>
+    <span class="sp"></span>
+    <button id="print" type="button">印刷・PDF保存</button>
+    <button id="out" type="button">閉じる</button>
+  </div>
+  <div id="sheet"><div id="host"></div></div>
+</div>
+<script>
+(function () {
+  var KEY = "kakinuma-report-pw";
+  var EXTRA = '@media screen{:host{display:block}.page{width:auto!important;max-width:210mm;height:auto!important;margin:0 auto;overflow:visible!important;background:#fff;box-shadow:0 1px 8px rgba(0,0,0,.12);font-family:"Yu Gothic UI","Yu Gothic","Hiragino Sans","Meiryo",sans-serif;color:#222}footer{position:static!important;text-align:right;margin-top:8mm}}' +
+    '@media screen and (max-width:640px){.page{padding:6mm 4mm!important}.nums{grid-template-columns:repeat(2,1fr)!important}h1{font-size:15pt!important}table{font-size:9pt!important}td.c{white-space:normal!important}}' +
+    '@media print{.page{font-family:"Yu Gothic UI","Yu Gothic","Hiragino Sans","Meiryo",sans-serif;color:#222}}';
+  var $ = function (id) { return document.getElementById(id); };
+  var store = {
+    get: function () { try { return localStorage.getItem(KEY); } catch (e) { return null; } },
+    set: function (v) { try { localStorage.setItem(KEY, v); } catch (e) {} },
+    del: function () { try { localStorage.removeItem(KEY); } catch (e) {} }
+  };
+  function b64(s) { var b = atob(s), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+  var blobP = null;
+  function blob() { if (!blobP) blobP = fetch("reports.enc.json", { cache: "no-store" }).then(function (r) { if (!r.ok) throw new Error("load"); return r.json(); }); return blobP; }
+  function decrypt(pw) {
+    return blob().then(function (d) {
+      return crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]).then(function (base) {
+        return crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64(d.salt), iterations: d.iter, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+      }).then(function (key) {
+        return crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(d.iv) }, key, b64(d.ct));
+      }).then(function (buf) { return JSON.parse(new TextDecoder().decode(buf)); });
+    });
+  }
+  var data = null, root = null;
+  function label(d) { return d.slice(0, 4) + "年" + Number(d.slice(4, 6)) + "月" + Number(d.slice(6, 8)) + "日"; }
+  function show(i) {
+    var r = data.reports[i];
+    if (!root) root = $("host").attachShadow({ mode: "open" });
+    root.innerHTML = "<style>" + r.style + "</style><style>" + EXTRA + "</style>" + r.body;
+    document.title = "ホームページ 週次レポート " + label(r.date);
+    window.scrollTo(0, 0);
+  }
+  function open(d) {
+    data = d;
+    var sel = $("week");
+    sel.innerHTML = "";
+    data.reports.forEach(function (r, i) {
+      var o = document.createElement("option");
+      o.value = i; o.textContent = label(r.date) + (i === 0 ? "（最新）" : "");
+      sel.appendChild(o);
+    });
+    $("gate").style.display = "none";
+    $("app").style.display = "block";
+    show(0);
+  }
+  $("week").addEventListener("change", function (e) { show(Number(e.target.value)); });
+  $("print").addEventListener("click", function () { window.print(); });
+  $("out").addEventListener("click", function () { store.del(); location.reload(); });
+  $("f").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var pw = $("pw").value;
+    $("err").textContent = ""; $("go").disabled = true; $("go").textContent = "確認しています…";
+    decrypt(pw).then(function (d) {
+      if ($("keep").checked) store.set(pw); else store.del();
+      open(d);
+    }).catch(function (err) {
+      $("err").textContent = (err && err.message === "load") ? "レポートを読み込めませんでした。時間をおいてもう一度お試しください。" : "パスワードが違います。もう一度入力してください。";
+      $("pw").value = ""; $("pw").focus();
+    }).then(function () { $("go").disabled = false; $("go").textContent = "レポートを見る"; });
+  });
+  var saved = store.get();
+  if (saved) decrypt(saved).then(open).catch(function () { store.del(); });
+})();
+</script>
+</body>
+</html>
