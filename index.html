@@ -6,29 +6,106 @@
 <meta name="robots" content="noindex, nofollow, noarchive">
 <title>ホームページ 週次レポート</title>
 <style>
-  @page { size: A4 portrait; margin: 0; }
+  :root { --red:#E3312A; --red-d:#c42820; --ink:#1f1d1c; --sub:#6b6562; --line:#ebe5e1; --bg:#faf7f5; --card:#fff; --good:#1a7f4b; --good-bg:#e8f5ee; --warn:#a85a00; --warn-bg:#fdf1e0; --mute-bg:#f1edea; }
   * { box-sizing: border-box; }
   html, body { margin: 0; }
-  body { font-family: "Yu Gothic UI","Yu Gothic","Hiragino Sans","Meiryo",sans-serif; color: #222; background: #f3f3f3; }
+  body { font-family: "Hiragino Sans","Yu Gothic UI","Yu Gothic","Meiryo",sans-serif; color: var(--ink); background: var(--bg); line-height: 1.7; -webkit-text-size-adjust: 100%; }
+  b { font-weight: 700; }
+
+  /* 入口 */
   #gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
-  #gate form { background: #fff; border-top: 4px solid #E3312A; border-radius: 8px; padding: 28px 24px; width: 100%; max-width: 380px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  #gate form { background: #fff; border-top: 4px solid var(--red); border-radius: 12px; padding: 28px 24px; width: 100%; max-width: 380px; box-shadow: 0 2px 16px rgba(0,0,0,.08); }
   #gate h1 { font-size: 18px; margin: 0 0 6px; }
-  #gate p { font-size: 13px; color: #666; margin: 0 0 16px; line-height: 1.6; }
-  #gate input[type=password] { width: 100%; font-size: 16px; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; }
-  #gate label.keep { display: flex; gap: 6px; align-items: center; font-size: 13px; color: #555; margin: 12px 0 0; }
-  #gate button { width: 100%; margin-top: 16px; font-size: 16px; padding: 11px; border: 0; border-radius: 6px; background: #E3312A; color: #fff; font-weight: 700; cursor: pointer; }
+  #gate p { font-size: 13px; color: var(--sub); margin: 0 0 16px; }
+  #gate input[type=password] { width: 100%; font-size: 16px; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; }
+  #gate label.keep { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--sub); margin: 12px 0 0; }
+  #gate button { width: 100%; margin-top: 16px; font-size: 16px; padding: 11px; border: 0; border-radius: 8px; background: var(--red); color: #fff; font-weight: 700; cursor: pointer; }
   #gate button[disabled] { opacity: .6; cursor: default; }
-  #err { color: #c42820; font-size: 13px; margin-top: 10px; min-height: 1.4em; }
+  #err { color: var(--red-d); font-size: 13px; margin-top: 10px; min-height: 1.4em; }
   #gate .by { font-size: 12px; color: #999; margin: 14px 0 0; text-align: right; }
+
+  /* レポート */
   #app { display: none; }
-  #bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 16px; background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 2; font-size: 14px; }
-  #bar select, #bar button { font-size: 14px; padding: 6px 10px; border: 1px solid #bbb; border-radius: 6px; background: #fff; color: #222; }
+  #bar { position: sticky; top: 0; z-index: 5; background: rgba(255,255,255,.94); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+  #bar .in { max-width: 920px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+  #bar .brand { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  #bar .brand::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--red); }
   #bar .sp { flex: 1; }
-  #sheet { padding: 16px 8px 32px; }
+  #bar select, #bar button { font: inherit; font-size: 14px; padding: 6px 10px; border: 1px solid #cfc8c3; border-radius: 8px; background: #fff; color: var(--ink); }
+  #bar button { cursor: pointer; }
+  main { max-width: 920px; margin: 0 auto; padding: 0 16px 48px; }
+  .hero { padding: 32px 0 8px; }
+  .hero .client { font-size: 14px; color: var(--sub); margin: 0; }
+  .hero h1 { font-size: clamp(24px, 5vw, 34px); line-height: 1.3; margin: 4px 0 10px; letter-spacing: .01em; }
+  .hero h1 span { color: var(--red); white-space: nowrap; }
+  .hero .period { font-size: 14px; color: var(--sub); margin: 0; }
+  section { margin-top: 36px; }
+  h2 { font-size: 20px; margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  h2 .no { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--red); color: #fff; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .kpi { padding: 16px 14px 14px; }
+  .kpi .label { font-size: 13px; color: var(--sub); line-height: 1.5; min-height: 3em; }
+  .kpi .value { font-size: 38px; font-weight: 800; line-height: 1.15; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .kpi .value small { font-size: 16px; font-weight: 700; margin-left: 2px; }
+  .pill { display: inline-block; margin-top: 8px; font-size: 12.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--mute-bg); color: var(--sub); }
+  .pill.up { background: var(--good-bg); color: var(--good); }
+  .pill.down { background: var(--warn-bg); color: var(--warn); }
+  .kpi .prev { font-size: 12.5px; color: var(--sub); margin-top: 4px; }
+
+  .trend { margin-top: 12px; padding: 16px 18px; }
+  .trend h3, .ai h3 { font-size: 15px; margin: 0 0 2px; }
+  .cap { font-size: 12.5px; color: var(--sub); margin: 0 0 12px; }
+  .bars { display: grid; gap: 8px; }
+  .bar-row { display: grid; grid-template-columns: 5.5em 1fr; gap: 10px; align-items: center; font-size: 13px; }
+  .bar-row .wk { color: var(--sub); }
+  .bar-row.now .wk { color: var(--ink); font-weight: 700; }
+  .track { display: flex; align-items: center; gap: 8px; }
+  .fill { height: 14px; border-radius: 7px; background: #e6c9c6; min-width: 4px; }
+  .bar-row.now .fill { background: var(--red); }
+  .track span { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .ai { margin-top: 12px; padding: 16px 18px 6px; }
+  .ai-row { display: grid; grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 1fr); gap: 10px 16px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+  .ai-row .name { font-weight: 700; font-size: 16px; }
+  .ai-row .name small { display: block; font-weight: 400; font-size: 11.5px; color: var(--sub); }
+  .dots { display: flex; gap: 5px; }
+  .dots i { width: 14px; height: 14px; border-radius: 50%; background: #e4ddd8; }
+  .dots i.on { background: var(--red); }
+  .dots.na i { background: transparent; border: 1.5px dashed #cfc8c3; }
+  .ai-row .res { font-size: 14px; }
+  .ai-row .res small { display: block; font-size: 12.5px; color: var(--sub); }
+
+  .notes { margin: 12px 0 0; padding: 0; list-style: none; font-size: 12.5px; color: var(--sub); }
+  .notes li { padding-left: 1.2em; text-indent: -1.2em; margin-bottom: 3px; }
+
+  .list { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .list li { padding: 14px 16px 14px 50px; position: relative; font-size: 15.5px; }
+  .list li::before { position: absolute; left: 14px; top: 14px; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+  .list.good li::before { content: "✓"; background: var(--good-bg); color: var(--good); }
+  .list.next { counter-reset: n; }
+  .list.next li { counter-increment: n; }
+  .list.next li::before { content: counter(n); background: var(--ink); color: #fff; }
+  .list b { color: var(--red-d); }
+  footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--sub); text-align: right; }
+
+  @media (max-width: 720px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .kpi .label { min-height: 0; }
+    .kpi .value { font-size: 32px; }
+    .ai-row { grid-template-columns: 1fr auto; }
+    .ai-row .res { grid-column: 1 / -1; }
+    #bar .brand { width: 100%; }
+    #bar label, #bar .sp { display: none; }
+    #bar select { flex: 1; min-width: 0; }
+    .hero { padding-top: 22px; }
+    section { margin-top: 28px; }
+  }
   @media print {
     body { background: #fff; }
     #bar { display: none; }
-    #sheet { padding: 0; }
+    .card { break-inside: avoid; }
   }
 </style>
 </head>
@@ -46,21 +123,19 @@
   </form>
 </div>
 <div id="app">
-  <div id="bar">
-    <label for="week">表示する週</label>
-    <select id="week"></select>
+  <div id="bar"><div class="in">
+    <span class="brand">ホームページ 週次レポート</span>
     <span class="sp"></span>
-    <button id="print" type="button">印刷・PDF保存</button>
+    <label for="week" style="font-size:13px;color:#6b6562">表示する週</label>
+    <select id="week"></select>
+    <button id="print" type="button">印刷</button>
     <button id="out" type="button">閉じる</button>
-  </div>
-  <div id="sheet"><div id="host"></div></div>
+  </div></div>
+  <main id="view"></main>
 </div>
 <script>
 (function () {
   var KEY = "kakinuma-report-pw";
-  var EXTRA = '@media screen{:host{display:block}.page{width:auto!important;max-width:210mm;height:auto!important;margin:0 auto;overflow:visible!important;background:#fff;box-shadow:0 1px 8px rgba(0,0,0,.12);font-family:"Yu Gothic UI","Yu Gothic","Hiragino Sans","Meiryo",sans-serif;color:#222}footer{position:static!important;text-align:right;margin-top:8mm}}' +
-    '@media screen and (max-width:640px){.page{padding:6mm 4mm!important}.nums{grid-template-columns:repeat(2,1fr)!important}h1{font-size:15pt!important}table{font-size:9pt!important}td.c{white-space:normal!important}}' +
-    '@media print{.page{font-family:"Yu Gothic UI","Yu Gothic","Hiragino Sans","Meiryo",sans-serif;color:#222}}';
   var $ = function (id) { return document.getElementById(id); };
   var store = {
     get: function () { try { return localStorage.getItem(KEY); } catch (e) { return null; } },
@@ -79,12 +154,54 @@
       }).then(function (buf) { return JSON.parse(new TextDecoder().decode(buf)); });
     });
   }
-  var data = null, root = null;
+  var data = null;
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function label(d) { return d.slice(0, 4) + "年" + Number(d.slice(4, 6)) + "月" + Number(d.slice(6, 8)) + "日"; }
+  function short(d) { return Number(d.slice(4, 6)) + "月" + Number(d.slice(6, 8)) + "日"; }
+  function tone(t) { return /増|上がった/.test(t) ? "up" : /減|下がった/.test(t) ? "down" : ""; }
+  function count(t) { if (/すべて/.test(t)) return 5; var m = t.match(/5問中\s*(\d)\s*問/); return m ? Number(m[1]) : null; }
+  function text(h) { var d = document.createElement("div"); d.innerHTML = h; return d.textContent; }
+
+  function kpis(r) {
+    return '<div class="kpis">' + r.nums.map(function (n) {
+      var m = n.diff.match(/^(.*?)[（(](.+)[）)]\s*$/), prev = m ? m[1].trim() : n.diff, chg = m ? m[2] : "";
+      return '<div class="card kpi"><div class="label">' + esc(n.label) + '</div><div class="value">' + esc(n.value) + '<small>' + esc(n.unit) + '</small></div>' +
+        (chg ? '<div class="pill ' + tone(chg) + '">' + esc(chg) + '</div>' : '') + (prev ? '<div class="prev">' + esc(prev) + '</div>' : '') + '</div>';
+    }).join("") + '</div>';
+  }
+  function trend(r) {
+    var rows = data.reports.filter(function (x) { return x.nums.length >= 2 && !isNaN(parseFloat(x.nums[0].value)); }).slice(0, 8).reverse();
+    if (rows.length < 2) return "";
+    var max = Math.max.apply(null, rows.map(function (x) { return parseFloat(x.nums[0].value); })) || 1;
+    return '<div class="card trend"><h3>これまでの推移</h3><p class="cap">各回のレポートでお伝えした、7日間の「' + esc(rows[0].nums[0].label) + '」と「' + esc(rows[0].nums[1].label) + '」です。</p><div class="bars">' +
+      rows.map(function (x) {
+        var v = parseFloat(x.nums[0].value);
+        return '<div class="bar-row' + (x.date === r.date ? " now" : "") + '"><span class="wk">' + short(x.date) + '</span><div class="track"><div class="fill" style="width:' + Math.round(v / max * 78) + '%"></div><span>' +
+          esc(x.nums[0].value + x.nums[0].unit) + '／クリック ' + esc(x.nums[1].value + x.nums[1].unit) + '</span></div></div>';
+      }).join("") + '</div></div>';
+  }
+  function ai(r) {
+    if (!r.ai.rows.length) return "";
+    var h = r.ai.head, capm = (h[0] || "").match(/[（(](.+)[）)]\s*$/);
+    return '<div class="card ai"><h3>AIに質問したとき、名前が出たか</h3><p class="cap">' + esc(capm ? capm[1] : "") + '</p>' + r.ai.rows.map(function (row) {
+      var m = text(row[0]).match(/^(.+?)[（(](.+)[）)]$/), name = m ? m[1] : text(row[0]), yomi = m ? m[2] : "";
+      var now = text(row[1] || ""), c = count(now), dots = "";
+      for (var i = 0; i < 5; i++) dots += '<i' + (c !== null && i < c ? ' class="on"' : '') + '></i>';
+      return '<div class="ai-row"><div class="name">' + esc(name) + (yomi ? '<small>' + esc(yomi) + '</small>' : '') + '</div><div class="dots' + (c === null ? " na" : "") + '" aria-hidden="true">' + dots + '</div>' +
+        '<div class="res">' + (h[1] ? esc(h[1]) + "：" : "") + (row[1] || "") + (row[2] ? '<small>' + esc(h[2] || "先週") + "：" + esc(text(row[2])) + '</small>' : '') + '</div></div>';
+    }).join("") + '</div>';
+  }
   function show(i) {
-    var r = data.reports[i];
-    if (!root) root = $("host").attachShadow({ mode: "open" });
-    root.innerHTML = "<style>" + r.style + "</style><style>" + EXTRA + "</style>" + r.body;
+    var r = data.reports[i], no = ["①", "②", "③", "④", "⑤"];
+    var h = '<div class="hero"><p class="client">' + esc(r.client) + '</p><h1>ホームページ 週次レポート <span>' + label(r.date) + '</span></h1><p class="period">' + r.period + '</p></div>';
+    h += '<section><h2><span class="no">1</span>今週の数字</h2>' + kpis(r) + trend(r) + ai(r) +
+      (r.notes.length ? '<ul class="notes">' + r.notes.map(function (n) { return '<li>' + n + '</li>'; }).join("") + '</ul>' : '') + '</section>';
+    r.sections.forEach(function (s, k) {
+      var cls = /次|やること/.test(s.title) ? "next" : "good";
+      h += '<section><h2><span class="no">' + (k + 2) + '</span>' + esc(s.title) + '</h2><ul class="list ' + cls + '">' + s.items.map(function (it) { return '<li class="card">' + it + '</li>'; }).join("") + '</ul></section>';
+    });
+    h += '<footer>' + esc(r.footer) + '</footer>';
+    $("view").innerHTML = h;
     document.title = "ホームページ 週次レポート " + label(r.date);
     window.scrollTo(0, 0);
   }
